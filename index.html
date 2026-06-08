@@ -155,7 +155,7 @@ const { data, error } = await supabase.auth.signUp({
       username: username
     }
   }
-}
+})
 
   if (error) {
     alert(error.message)
