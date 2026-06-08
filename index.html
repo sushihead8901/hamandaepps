@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hamanda EPPS</title>
+  <title>Hamanda Enterprise Printer Service</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -17,12 +17,47 @@
 
 <hr>
 
-<div>
-  <p>We print documents fast and cheap for YOU!</p>
+<div id="boxP1">
+  <p>
+    We print documents just for <strong>YOU</strong>!
+    Our prints are cheap! It's <u>reliable</u>, <b>fast</b>, and cheap!
+  </p>
 </div>
+
+<p>Our prices are below this text</p>
+
+<table border="4">
+  <caption>Print Jobs</caption>
+  <tr>
+    <th>Product</th>
+    <th>Price</th>
+  </tr>
+  <tr>
+    <td>1 Page</td>
+    <td>$1.00</td>
+  </tr>
+  <tr>
+    <td>1 Copy</td>
+    <td>Depends on pages</td>
+  </tr>
+  <tr>
+    <td>TAX</td>
+    <td>5.60%</td>
+  </tr>
+</table>
+
+<br>
+
+<!-- PRINT BUTTON (RESTORED) -->
+<h4>Printing Submissions</h4>
+
+<a href="https://forms.gle/hb4MoTE2VTM2nhn89" target="_blank">
+  <button type="button">Submit a Print Job</button>
+</a>
 
 <hr>
 
+<!-- SIGN UP -->
 <h2>Sign Up</h2>
 
 <form id="signupForm">
@@ -37,6 +72,7 @@
 
 <hr>
 
+<!-- LOGIN -->
 <h2>Log In</h2>
 
 <form id="loginForm">
@@ -51,11 +87,14 @@
 
 <button id="logoutBtn">Log Out</button>
 
+<!-- SUPABASE -->
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
+// 🔥 YOUR SUPABASE INFO
 const supabaseUrl = 'https://elffgisoupzisecavmvp.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsZmZnaXNvdXB6aXNlY2F2bXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Nzk2MjgsImV4cCI6MjA5NjQ1NTYyOH0.BJpE196GqOOgkBsOsvCVHx4bk64P8UjzS5oD4D0gV0k' // replace with your real anon key
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsZmZnaXNvdXB6aXNlY2F2bXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Nzk2MjgsImV4cCI6MjA5NjQ1NTYyOH0.BJpE196GqOOgkBsOsvCVHx4bk64P8UjzS5oD4D0gV0k'
+
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 const status = document.getElementById("status")
@@ -90,10 +129,7 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
 
   const { data, error } = await supabase.auth.signUp({
     email,
-    password,
-    options: {
-      data: { username } // <- important: sends username to metadata
-    }
+    password
   })
 
   if (error) {
@@ -101,20 +137,24 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
     return
   }
 
-  // Insert username into profiles table manually to avoid NULL issue
+  // SAFE PROFILE INSERT (prevents NULL username issues)
   const { error: profileError } = await supabase
     .from("profiles")
     .insert([
-      { id: data.user.id, email, username, points: 50 }
+      {
+        id: data.user.id,
+        email,
+        username,
+        points: 50
+      }
     ])
 
   if (profileError) {
-    console.log(profileError)
-    alert("Error saving profile: " + profileError.message)
+    alert("Profile error: " + profileError.message)
     return
   }
 
-  alert("Account created! You now have 50 points.")
+  alert("Account created! You got 50 points 🎉")
   e.target.reset()
   loadUser()
 })
