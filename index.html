@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hamanda EPPS</title>
   <link rel="stylesheet" href="style.css">
+  <script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+  const supabaseUrl = 'https://elffgisoupzisecavmvp.supabase.co/rest/v1/';
+  const supabaseKey = 'sb_publishable_yrFgLLyMBuepQ0Zv_AN_gA_e_ZyL2zi';
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  window.supabase = supabase; // make it accessible globally
+</script>
 </head>
 
 <body>
@@ -76,30 +85,46 @@
   
 <button onclick="logout()">Log Out</button>
 
-<script>
-  // Show username if saved in local memory
-  window.onload = function () {
-    const savedUser = localStorage.getItem("username");
-    if (savedUser) {
-      document.getElementById("usernameH4").textContent =
-        "Welcome " + savedUser;
-    }
-  };
+<script type="module">
+  const form = document.getElementById("accountForm");
 
-  // Handle form submission
-  document.getElementById("accountForm").addEventListener("submit", function(event) {
+  form.addEventListener("submit", async function(event) {
     event.preventDefault();
+
     const username = document.getElementById("username").value;
-    localStorage.setItem("username", username);
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("pass").value;
+
+    // Signup user in Supabase Auth
+    const { data, error } = await supabase.auth.signUp({
+      email: email,
+      password: password
+    });
+
+    if (error) {
+      alert("Error creating account: " + error.message);
+      return;
+    }
+
+    // Save username in 'profiles' table
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert([{ id: data.user.id, email: email, username: username, points: 50 }]);
+
+    if (profileError) {
+      alert("Error saving profile: " + profileError.message);
+      return;
+    }
+
+    alert("Account created! You have 50 reward points.");
     document.getElementById("usernameH4").textContent = "Welcome " + username;
   });
 
   // Log out function
-  function logout() {
-    localStorage.removeItem("username");
+  window.logout = async function() {
+    await supabase.auth.signOut();
     document.getElementById("usernameH4").textContent = "Welcome, Guest";
-  }
+  };
 </script>
-
 </body>
 </html>
