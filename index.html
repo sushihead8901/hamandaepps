@@ -12,60 +12,27 @@
 <header>
   <h1>Hamanda Enterprise Printer Service</h1>
   <h3>Fast Printing, Cheap Prints</h3>
-  <h4 id="usernameH4">Welcome, Guest</h4>
+  <h4 id="status">Welcome, Guest</h4>
 </header>
 
 <hr>
 
-<div id="boxP1">
-  <p>
-    We print documents just for <strong>YOU</strong>!
-    Our prints are cheap! It's <u>reliable</u>, <b>fast</b>, and cheap!
-  </p>
+<div>
+  <p>We print documents fast and cheap for YOU!</p>
 </div>
-
-<p>Our prices are below this text</p>
-
-<table border="4">
-  <caption>Print Jobs</caption>
-  <tr>
-    <th>Product</th>
-    <th>Price</th>
-  </tr>
-  <tr>
-    <td>1 Page</td>
-    <td>$1.00</td>
-  </tr>
-  <tr>
-    <td>1 Copy</td>
-    <td>Depends on pages</td>
-  </tr>
-  <tr>
-    <td>TAX</td>
-    <td>5.60%</td>
-  </tr>
-</table>
-
-<br>
-
-<h4>Printing Submissions</h4>
-
-<a href="https://forms.gle/hb4MoTE2VTM2nhn89" target="_blank">
-  <button type="button">Submit a Print Job</button>
-</a>
 
 <hr>
 
-<h2>Create Account</h2>
+<h2>Sign Up</h2>
 
 <form id="signupForm">
-  <input id="signupUsername" placeholder="Username" required minlength="3" maxlength="20">
+  <input id="signupUsername" placeholder="Username" required minlength="3">
   <br><br>
   <input id="signupEmail" type="email" placeholder="Email" required>
   <br><br>
   <input id="signupPassword" type="password" placeholder="Password" required minlength="6">
   <br><br>
-  <button type="submit">Sign Up</button>
+  <button type="submit">Create Account</button>
 </form>
 
 <hr>
@@ -84,7 +51,6 @@
 
 <button id="logoutBtn">Log Out</button>
 
-<!-- Supabase -->
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
@@ -92,14 +58,14 @@ const supabaseUrl = 'https://elffgisoupzisecavmvp.supabase.co'
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsZmZnaXNvdXB6aXNlY2F2bXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Nzk2MjgsImV4cCI6MjA5NjQ1NTYyOH0.BJpE196GqOOgkBsOsvCVHx4bk64P8UjzS5oD4D0gV0k'
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-const usernameH4 = document.getElementById("usernameH4")
+const status = document.getElementById("status")
 
-// 🔹 Load logged-in user
+// ---------------- LOAD USER ----------------
 async function loadUser() {
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    usernameH4.textContent = "Welcome, Guest"
+    status.textContent = "Welcome, Guest"
     return
   }
 
@@ -109,14 +75,12 @@ async function loadUser() {
     .eq("id", user.id)
     .single()
 
-  if (data) {
-    usernameH4.textContent = `Welcome, ${data.username || "User"}`
-  }
+  status.textContent = `Welcome, ${data?.username || "User"}`
 }
 
 loadUser()
 
-// 🔹 SIGN UP
+// ---------------- SIGN UP ----------------
 document.getElementById("signupForm").addEventListener("submit", async (e) => {
   e.preventDefault()
 
@@ -126,6 +90,34 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
 
   const { data, error } = await supabase.auth.signUp({
     email,
+    password,
+    options: {
+      data: {
+        username: username
+      }
+    }
+  })
+
+  if (error) {
+    alert(error.message)
+    return
+  }
+
+  alert("Account created! (Check profiles table for 50 points)")
+  e.target.reset()
+
+  loadUser()
+})
+
+// ---------------- LOGIN ----------------
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault()
+
+  const email = document.getElementById("loginEmail").value
+  const password = document.getElementById("loginPassword").value
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
     password
   })
 
@@ -134,49 +126,15 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
     return
   }
 
-  alert("Account created! You got 50 points 🎉")
-  e.target.reset()
-
-  // profile is created automatically by SQL trigger
-})
-
-// 🔹 LOG IN
-document.getElementById("loginForm").addEventListener("submit", async (e) => {
-  e.preventDefault()
-
-  const email = document.getElementById("loginEmail").value
-  const password = document.getElementById("loginPassword").value
-
-const { data, error } = await supabase.auth.signUp({
-  email,
-  password,
-  options: {
-    data: {
-      username: username
-    }
-  }
-})
-
-  if (error) {
-    alert(error.message)
-    return
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", data.user.id)
-    .single()
-
-  usernameH4.textContent = `Welcome, ${profile.username || "User"}`
+  loadUser()
   alert("Logged in!")
   e.target.reset()
 })
 
-// 🔹 LOG OUT
+// ---------------- LOGOUT ----------------
 document.getElementById("logoutBtn").addEventListener("click", async () => {
   await supabase.auth.signOut()
-  usernameH4.textContent = "Welcome, Guest"
+  status.textContent = "Welcome, Guest"
 })
 </script>
 
