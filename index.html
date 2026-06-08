@@ -3,19 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hamanda EPPS</title>
+  <title>Hamanda Enterprise Printer Service</title>
   <link rel="stylesheet" href="style.css">
-  <script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-  const supabaseUrl = 'https://elffgisoupzisecavmvp.supabase.co/rest/v1/';
-  const supabaseKey = 'sb_publishable_yrFgLLyMBuepQ0Zv_AN_gA_e_ZyL2zi';
-  const supabase = createClient(supabaseUrl, supabaseKey);
-
-  window.supabase = supabase; // make it accessible globally
-</script>
 </head>
-
 <body>
 
 <header>
@@ -60,71 +50,118 @@
 <h4>Printing Submissions</h4>
 
 <a href="https://forms.gle/hb4MoTE2VTM2nhn89" target="_blank">
-  <button>Submit a Print Job</button>
+  <button type="button">Submit a Print Job</button>
 </a>
 
 <hr>
 
-<h4>Create an Account/Log Out of a Account</h4>
+<h4>Create an Account</h4>
 
 <form id="accountForm">
   <label>Username:</label>
   <input id="username" type="text" required minlength="3" maxlength="20">
-  <br>
+  <br><br>
 
   <label>Email:</label>
   <input id="email" type="email" required>
-  <br>
+  <br><br>
 
   <label>Password:</label>
-  <input id="pass" type="password" required minlength="4" maxlength="20">
-  <br>
+  <input id="pass" type="password" required minlength="6">
+  <br><br>
 
-  <button type="submit">Launch Account!</button>
+  <button type="submit">Create Account</button>
 </form>
-  
-<button onclick="logout()">Log Out</button>
+
+<br>
+
+<button id="logoutBtn" type="button">Log Out</button>
 
 <script type="module">
-  const form = document.getElementById("accountForm");
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-  form.addEventListener("submit", async function(event) {
-    event.preventDefault();
+const supabaseUrl = 'https://elffgisoupzisecavmvp.supabase.co/rest/v1/'
+const supabaseKey = 'sb_publishable_yrFgLLyMBuepQ0Zv_AN_gA_e_ZyL2zi'
 
-    const username = document.getElementById("username").value;
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("pass").value;
+const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Signup user in Supabase Auth
-    const { data, error } = await supabase.auth.signUp({
-      email: email,
-      password: password
-    });
+const usernameH4 = document.getElementById("usernameH4")
+const form = document.getElementById("accountForm")
+const logoutBtn = document.getElementById("logoutBtn")
 
-    if (error) {
-      alert("Error creating account: " + error.message);
-      return;
-    }
+async function loadUser() {
+  const {
+    data: { user }
+  } = await supabase.auth.getUser()
 
-    // Save username in 'profiles' table
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert([{ id: data.user.id, email: email, username: username, points: 50 }]);
+  if (!user) {
+    usernameH4.textContent = "Welcome, Guest"
+    return
+  }
 
-    if (profileError) {
-      alert("Error saving profile: " + profileError.message);
-      return;
-    }
+  const { data } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single()
 
-    alert("Account created! You have 50 reward points.");
-    document.getElementById("usernameH4").textContent = "Welcome " + username;
-  });
+  if (data) {
+    usernameH4.textContent = `Welcome, ${data.username}`
+  }
+}
 
-  // Log out function
-  window.logout = async function() {
-    await supabase.auth.signOut();
-    document.getElementById("usernameH4").textContent = "Welcome, Guest";
-  };
+form.addEventListener("submit", async (event) => {
+  event.preventDefault()
+
+  const username = document.getElementById("username").value
+  const email = document.getElementById("email").value
+  const password = document.getElementById("pass").value
+
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password
+  })
+
+  if (error) {
+    alert(error.message)
+    return
+  }
+
+  if (!data.user) {
+    alert("Failed to create account.")
+    return
+  }
+
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .insert([
+      {
+        id: data.user.id,
+        email: email,
+        username: username,
+        points: 50
+      }
+    ])
+
+  if (profileError) {
+    alert(profileError.message)
+    return
+  }
+
+  usernameH4.textContent = `Welcome, ${username}`
+
+  alert("Account created! You received 50 reward points.")
+
+  form.reset()
+})
+
+logoutBtn.addEventListener("click", async () => {
+  await supabase.auth.signOut()
+  usernameH4.textContent = "Welcome, Guest"
+})
+
+loadUser()
 </script>
+
 </body>
 </html>
