@@ -34,3 +34,7 @@ text-align: center;
 
 font-size: 1.1em
 }
+.hidebutton {
+  text-decoration: none;
+  color: #d6cd23;
+}
