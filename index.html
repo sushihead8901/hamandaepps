@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hamanda Enterprise Printer Service</title>
+  <title>Hamanda EPPS</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
 <header>
@@ -55,44 +56,47 @@
 
 <hr>
 
-<h4>Create an Account</h4>
+<h2>Create Account</h2>
 
-<form id="accountForm">
-  <label>Username:</label>
-  <input id="username" type="text" required minlength="3" maxlength="20">
+<form id="signupForm">
+  <input id="signupUsername" placeholder="Username" required minlength="3" maxlength="20">
   <br><br>
-
-  <label>Email:</label>
-  <input id="email" type="email" required>
+  <input id="signupEmail" type="email" placeholder="Email" required>
   <br><br>
-
-  <label>Password:</label>
-  <input id="pass" type="password" required minlength="6">
+  <input id="signupPassword" type="password" placeholder="Password" required minlength="6">
   <br><br>
+  <button type="submit">Sign Up</button>
+</form>
 
-  <button type="submit">Create Account</button>
+<hr>
+
+<h2>Log In</h2>
+
+<form id="loginForm">
+  <input id="loginEmail" type="email" placeholder="Email" required>
+  <br><br>
+  <input id="loginPassword" type="password" placeholder="Password" required>
+  <br><br>
+  <button type="submit">Log In</button>
 </form>
 
 <br>
 
-<button id="logoutBtn" type="button">Log Out</button>
+<button id="logoutBtn">Log Out</button>
 
+<!-- Supabase -->
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const supabaseUrl = 'https://elffgisoupzisecavmvp.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsZmZnaXNvdXB6aXNlY2F2bXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Nzk2MjgsImV4cCI6MjA5NjQ1NTYyOH0.BJpE196GqOOgkBsOsvCVHx4bk64P8UjzS5oD4D0gV0k'
-
+const supabaseKey = 'YOUR_SUPABASE_ANON_KEY'
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 const usernameH4 = document.getElementById("usernameH4")
-const form = document.getElementById("accountForm")
-const logoutBtn = document.getElementById("logoutBtn")
 
+// 🔹 Load logged-in user
 async function loadUser() {
-  const {
-    data: { user }
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
     usernameH4.textContent = "Welcome, Guest"
@@ -106,16 +110,19 @@ async function loadUser() {
     .single()
 
   if (data) {
-    usernameH4.textContent = `Welcome, ${data.username}`
+    usernameH4.textContent = `Welcome, ${data.username || "User"}`
   }
 }
 
-form.addEventListener("submit", async (event) => {
-  event.preventDefault()
+loadUser()
 
-  const username = document.getElementById("username").value
-  const email = document.getElementById("email").value
-  const password = document.getElementById("pass").value
+// 🔹 SIGN UP
+document.getElementById("signupForm").addEventListener("submit", async (e) => {
+  e.preventDefault()
+
+  const username = document.getElementById("signupUsername").value
+  const email = document.getElementById("signupEmail").value
+  const password = document.getElementById("signupPassword").value
 
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -127,40 +134,45 @@ form.addEventListener("submit", async (event) => {
     return
   }
 
-  if (!data.user) {
-    alert("Failed to create account.")
-    return
-  }
+  alert("Account created! You got 50 points 🎉")
+  e.target.reset()
 
-  const { error: profileError } = await supabase
-    .from("profiles")
-    .insert([
-      {
-        id: data.user.id,
-        email: email,
-        username: username,
-        points: 50
-      }
-    ])
-
-  if (profileError) {
-    alert(profileError.message)
-    return
-  }
-
-  usernameH4.textContent = `Welcome, ${username}`
-
-  alert("Account created! You received 50 reward points.")
-
-  form.reset()
+  // profile is created automatically by SQL trigger
 })
 
-logoutBtn.addEventListener("click", async () => {
+// 🔹 LOG IN
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault()
+
+  const email = document.getElementById("loginEmail").value
+  const password = document.getElementById("loginPassword").value
+
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  })
+
+  if (error) {
+    alert(error.message)
+    return
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", data.user.id)
+    .single()
+
+  usernameH4.textContent = `Welcome, ${profile.username || "User"}`
+  alert("Logged in!")
+  e.target.reset()
+})
+
+// 🔹 LOG OUT
+document.getElementById("logoutBtn").addEventListener("click", async () => {
   await supabase.auth.signOut()
   usernameH4.textContent = "Welcome, Guest"
 })
-
-loadUser()
 </script>
 
 </body>
