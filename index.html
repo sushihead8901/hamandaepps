@@ -42,7 +42,7 @@
 <form id="loginForm">
   <input id="loginEmail" type="email" placeholder="Email" required>
   <br><br>
-  <input id="loginPassword" type="password" placeholder="Password" required>
+  <input id="loginPassword" type="password" placeholder="Password" required minlength="6">
   <br><br>
   <button type="submit">Log In</button>
 </form>
@@ -55,7 +55,7 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
 const supabaseUrl = 'https://elffgisoupzisecavmvp.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsZmZnaXNvdXB6aXNlY2F2bXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Nzk2MjgsImV4cCI6MjA5NjQ1NTYyOH0.BJpE196GqOOgkBsOsvCVHx4bk64P8UjzS5oD4D0gV0k'
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsZmZnaXNvdXB6aXNlY2F2bXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Nzk2MjgsImV4cCI6MjA5NjQ1NTYyOH0.BJpE196GqOOgkBsOsvCVHx4bk64P8UjzS5oD4D0gV0k' // replace with your real anon key
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 const status = document.getElementById("status")
@@ -92,9 +92,7 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
     email,
     password,
     options: {
-      data: {
-        username: username
-      }
+      data: { username } // <- important: sends username to metadata
     }
   })
 
@@ -103,9 +101,21 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
     return
   }
 
-  alert("Account created! (Check profiles table for 50 points)")
-  e.target.reset()
+  // Insert username into profiles table manually to avoid NULL issue
+  const { error: profileError } = await supabase
+    .from("profiles")
+    .insert([
+      { id: data.user.id, email, username, points: 50 }
+    ])
 
+  if (profileError) {
+    console.log(profileError)
+    alert("Error saving profile: " + profileError.message)
+    return
+  }
+
+  alert("Account created! You now have 50 points.")
+  e.target.reset()
   loadUser()
 })
 
