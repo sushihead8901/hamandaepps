@@ -128,9 +128,12 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
   const password = document.getElementById("signupPassword").value
 
   const { data, error } = await supabase.auth.signUp({
-    email,
-    password
-  })
+  email,
+  password,
+  options: {
+    data: { username } // username must exist here
+  }
+})
 
   if (error) {
     alert(error.message)
