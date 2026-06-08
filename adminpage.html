@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin Panel</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<h1>Admin Panel</h1>
+<h1>Admin Panel 👑</h1>
 
-<h3 id="status">Checking access...</h3>
+<h3 id="status">Checking admin access...</h3>
 
 <table border="1">
   <thead>
@@ -41,29 +42,34 @@ async function checkAdmin() {
 
   if (!user) {
     status.textContent = "Not logged in"
-    return false
+    return null
   }
 
-  const { data } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
     .single()
 
-  if (!data?.is_admin) {
-    status.textContent = "Access denied"
-    return false
+  if (error) {
+    status.textContent = "Error loading profile"
+    return null
+  }
+
+  if (!profile?.is_admin) {
+    status.textContent = "Access denied ❌"
+    return null
   }
 
   status.textContent = "Welcome Admin 👑"
-  return true
+  return profile
 }
 
 // ---------------- LOAD USERS ----------------
 async function loadUsers() {
   const { data: users, error } = await supabase
-    .from('profiles')
-    .select('*')
+    .from("profiles")
+    .select("*")
 
   if (error) {
     alert(error.message)
@@ -75,10 +81,10 @@ async function loadUsers() {
   users.forEach(user => {
     table.innerHTML += `
       <tr>
-        <td>${user.username}</td>
+        <td>${user.username || "NULL"}</td>
         <td>${user.email}</td>
         <td>
-          <input type="number" id="points-${user.id}" value="${user.points}">
+          <input id="points-${user.id}" type="number" value="${user.points}" min="0">
         </td>
         <td>
           <button onclick="updatePoints('${user.id}')">Save</button>
@@ -90,25 +96,25 @@ async function loadUsers() {
 
 // ---------------- UPDATE POINTS ----------------
 window.updatePoints = async function(userId) {
-  const newPoints = document.getElementById(`points-${userId}`).value
+  const value = document.getElementById(`points-${userId}`).value
 
   const { error } = await supabase
-    .from('profiles')
-    .update({ points: parseInt(newPoints) })
-    .eq('id', userId)
+    .from("profiles")
+    .update({ points: parseInt(value) })
+    .eq("id", userId)
 
   if (error) {
     alert(error.message)
     return
   }
 
-  alert("Points updated!")
+  alert("Points updated ✅")
 }
 
 // ---------------- INIT ----------------
 (async () => {
-  const isAdmin = await checkAdmin()
-  if (isAdmin) {
+  const admin = await checkAdmin()
+  if (admin) {
     loadUsers()
   }
 })()
