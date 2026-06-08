@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hamanda EPPS</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+  <h1>Hamanda Enterprise Printer Service</h1>
+  <h3>Fast Printing, Cheap Prints</h3>
+  <h4 id="usernameH4">Welcome, Guest</h4>
+</header>
+
+<hr>
+
+<div id="boxP1">
+  <p>
+    We print documents just for <strong>YOU</strong>!
+    Our prints are cheap! It's <u>reliable</u>, <b>fast</b>, and cheap!
+  </p>
+</div>
+
+<p>Our prices are below this text</p>
+
+<table border="4">
+  <caption>Print Jobs</caption>
+  <tr>
+    <th>Product</th>
+    <th>Price</th>
+  </tr>
+  <tr>
+    <td>1 Page</td>
+    <td>$1.00</td>
+  </tr>
+  <tr>
+    <td>1 Copy</td>
+    <td>Depends on pages</td>
+  </tr>
+  <tr>
+    <td>TAX</td>
+    <td>5.60%</td>
+  </tr>
+</table>
+
+<br>
+
+<h4>Printing Submissions</h4>
+
+<a href="https://forms.gle/hb4MoTE2VTM2nhn89" target="_blank">
+  <button>Submit a Print Job</button>
+</a>
+
+<hr>
+
+<h4>Create an Account/Log Out of a Account</h4>
+
+<form id="accountForm">
+  <label>Username:</label>
+  <input id="username" type="text" required minlength="3" maxlength="20">
+  <br>
+
+  <label>Email:</label>
+  <input id="email" type="email" required>
+  <br>
+
+  <label>Password:</label>
+  <input id="pass" type="password" required minlength="4" maxlength="20">
+  <br>
+
+  <button type="submit">Launch Account!</button>
+</form>
+  
+<button onclick="logout()">Log Out</button>
+
+<script>
+  // Show username if saved in local memory
+  window.onload = function () {
+    const savedUser = localStorage.getItem("username");
+    if (savedUser) {
+      document.getElementById("usernameH4").textContent =
+        "Welcome " + savedUser;
+    }
+  };
+
+  // Handle form submission
+  document.getElementById("accountForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+    const username = document.getElementById("username").value;
+    localStorage.setItem("username", username);
+    document.getElementById("usernameH4").textContent = "Welcome " + username;
+  });
+
+  // Log out function
+  function logout() {
+    localStorage.removeItem("username");
+    document.getElementById("usernameH4").textContent = "Welcome, Guest";
+  }
+</script>
+
+</body>
+</html>
