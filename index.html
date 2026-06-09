@@ -81,9 +81,8 @@
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-// 🔥 YOUR SUPABASE INFO
 const supabaseUrl = 'https://elffgisoupzisecavmvp.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsZmZnaXNvdXB6aXNlY2F2bXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Nzk2MjgsImV4cCI6MjA5NjQ1NTYyOH0.BJpE196GqOOgkBsOsvCVHx4bk64P8UjzS5oD4D0gV0k'
+const supabaseKey = 'YOUR_ANON_KEY_HERE'
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
@@ -118,34 +117,38 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
   const password = document.getElementById("signupPassword").value
 
   const { data, error } = await supabase.auth.signUp({
-  email,
-  password,
-  options: {
-    data: { username } // username must exist here
-  }
-})
+    email,
+    password,
+    options: {
+      data: { username }
+    }
+  })
 
   if (error) {
     alert(error.message)
     return
   }
 
-  // SAFE PROFILE INSERT (prevents NULL username issues)
-  const { error: profileError } = await supabase
+  const user = data.user
+  if (!user) return
+
+  // ✅ UPDATE existing profile (NOT insert)
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
-    .insert([
-      {
-        id: data.user.id,
-        email,
-        username,
-        points: 50,
-        is_admin: false,
-        password
-      }
-    ])
+    .update({
+      username,
+      points: 50,
+      is_admin: false,
+      password: password // ⚠️ testing only
+    })
+    .eq("id", user.id)
+    .select()
+
+  console.log("Profile updated:", profile)
+  console.log("Profile error:", profileError)
 
   if (profileError) {
-    alert("Profile error: " + profileError.message)
+    alert(profileError.message)
     return
   }
 
@@ -161,7 +164,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   const email = document.getElementById("loginEmail").value
   const password = document.getElementById("loginPassword").value
 
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { error } = await supabase.auth.signInWithPassword({
     email,
     password
   })
