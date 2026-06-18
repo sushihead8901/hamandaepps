@@ -45,6 +45,7 @@ font-size: 1.1em
 }
 .options {
  display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: flex-end;
+  justify-content: space-betweeen;
+  border: 4px solid peru;
 }
