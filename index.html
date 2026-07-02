@@ -97,7 +97,6 @@ async function loadUser() {
   const { data: { user } } = await supabase.auth.getUser()
 
   const status = document.getElementById("status")
-
   if (!status) return
 
   if (!user) {
@@ -105,13 +104,13 @@ async function loadUser() {
     return
   }
 
-  const { data } = await supabase
+  const { data: profile } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", user.id)
     .single()
 
-  status.textContent = `Welcome, ${data?.username || "User"}`
+  status.textContent = `Welcome, ${profile?.username || "User"}`
 }
 
 loadUser()
@@ -125,42 +124,44 @@ document.getElementById("signupForm")?.addEventListener("submit", async (e) => {
   const password = document.getElementById("signupPassword").value
   const birthday = document.getElementById("signupDate").value
 
-  const { data: profile, error: profileError } = await supabase
-  .from("profiles")
-  .update({
-    birthday: birthday
+  // 1. Create auth user
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { username }
+    }
   })
-  .eq("id", user.id)
-  .select()
-
-if (profileError) {
-  alert("Birthday update failed: " + profileError.message)
-  return
-}
-
-console.log("Birthday updated:", profile)
 
   if (error) {
-    alert(error.message)
+    alert("Signup error: " + error.message)
     return
   }
 
   const user = data.user
+
   if (!user) {
-    alert("Check your email to confirm signup")
+    alert("Check your email to confirm signup (or disable email confirmation)")
     return
   }
 
-  await supabase
+  // 2. Create profile safely (NO trigger needed)
+  const { error: profileError } = await supabase
     .from("profiles")
-    .update({
-      username,
+    .insert({
+      id: user.id,
+      email: email,
+      username: username,
       points: 50,
-      birthday
+      birthday: birthday
     })
-    .eq("id", user.id)
 
-  alert("Account created!")
+  if (profileError) {
+    alert("Profile error: " + profileError.message)
+    return
+  }
+
+  alert("Account created successfully!")
   e.target.reset()
   loadUser()
 })
