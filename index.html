@@ -125,13 +125,20 @@ document.getElementById("signupForm")?.addEventListener("submit", async (e) => {
   const password = document.getElementById("signupPassword").value
   const birthday = document.getElementById("signupDate").value
 
-  const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: { username }
-    }
+  const { data: profile, error: profileError } = await supabase
+  .from("profiles")
+  .update({
+    birthday: birthday
   })
+  .eq("id", user.id)
+  .select()
+
+if (profileError) {
+  alert("Birthday update failed: " + profileError.message)
+  return
+}
+
+console.log("Birthday updated:", profile)
 
   if (error) {
     alert(error.message)
