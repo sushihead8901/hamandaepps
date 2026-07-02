@@ -147,14 +147,14 @@ document.getElementById("signupForm")?.addEventListener("submit", async (e) => {
 
   // 2. Create profile safely (NO trigger needed)
   const { error: profileError } = await supabase
-    .from("profiles")
-    .insert({
-      id: user.id,
-      email: email,
-      username: username,
-      points: 50,
-      birthday: birthday
-    })
+  .from("profiles")
+  .upsert({
+    id: user.id,
+    email: email,
+    username: username,
+    points: 50,
+    birthday: birthday
+  })
 
   if (profileError) {
     alert("Profile error: " + profileError.message)
