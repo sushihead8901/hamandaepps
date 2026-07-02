@@ -122,7 +122,6 @@ document.getElementById("signupForm")?.addEventListener("submit", async (e) => {
   const username = document.getElementById("signupUsername").value
   const email = document.getElementById("signupEmail").value
   const password = document.getElementById("signupPassword").value
-  const birthday = document.getElementById("signupDate").value
 
   // 1. Create auth user
   const { data, error } = await supabase.auth.signUp({
@@ -153,7 +152,6 @@ document.getElementById("signupForm")?.addEventListener("submit", async (e) => {
     email: email,
     username: username,
     points: 50,
-    birthday: birthday
   })
 
   if (profileError) {
