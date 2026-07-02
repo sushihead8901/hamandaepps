@@ -119,12 +119,10 @@ loadUser()
 document.getElementById("signupForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const username = document.getElementById("signupUsername").value;
   const email = document.getElementById("signupEmail").value;
   const password = document.getElementById("signupPassword").value;
-  const birthday = document.getElementById("signupDate").value;
+  const username = document.getElementById("signupUsername").value;
 
-  // Create the auth user
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -133,35 +131,15 @@ document.getElementById("signupForm").addEventListener("submit", async (e) => {
     }
   });
 
+  console.log("DATA:", data);
+  console.log("ERROR:", error);
+
   if (error) {
-    alert(error.message);
+    alert("ERROR: " + error.message);
     return;
   }
 
-  const user = data.user;
-  if (!user) {
-    alert("Please check your email to confirm your account.");
-    return;
-  }
-
-  // Update the profile created by your trigger
-  const { error: profileError } = await supabase
-    .from("profiles")
-    .update({
-      username: username,
-      points: 50,
-      birthday: birthday
-    })
-    .eq("id", user.id);
-
-  if (profileError) {
-    alert(profileError.message);
-    return;
-  }
-
-  alert("Account created! You got 50 points 🎉");
-  e.target.reset();
-  loadUser();
+  alert("SUCCESS - check Supabase Auth users");
 });
 
 // ---------------- LOGIN ----------------
