@@ -92,11 +92,13 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
-const status = document.getElementById("status")
-
 // ---------------- LOAD USER ----------------
 async function loadUser() {
   const { data: { user } } = await supabase.auth.getUser()
+
+  const status = document.getElementById("status")
+
+  if (!status) return
 
   if (!user) {
     status.textContent = "Welcome, Guest"
@@ -115,35 +117,49 @@ async function loadUser() {
 loadUser()
 
 // ---------------- SIGN UP ----------------
-// ---------------- SIGN UP ----------------
-document.getElementById("signupForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+document.getElementById("signupForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault()
 
-  const email = document.getElementById("signupEmail").value;
-  const password = document.getElementById("signupPassword").value;
-  const username = document.getElementById("signupUsername").value;
+  const username = document.getElementById("signupUsername").value
+  const email = document.getElementById("signupEmail").value
+  const password = document.getElementById("signupPassword").value
+  const birthday = document.getElementById("signupDate").value
 
-  const result = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: { username }
     }
-  });
+  })
 
-  console.log("FULL RESULT:", result);
-
-  if (result.error) {
-    console.log("ERROR OBJECT:", result.error);
-    alert(result.error.message || JSON.stringify(result.error));
-    return;
+  if (error) {
+    alert(error.message)
+    return
   }
 
-  alert("SUCCESS");
-});
+  const user = data.user
+  if (!user) {
+    alert("Check your email to confirm signup")
+    return
+  }
+
+  await supabase
+    .from("profiles")
+    .update({
+      username,
+      points: 50,
+      birthday
+    })
+    .eq("id", user.id)
+
+  alert("Account created!")
+  e.target.reset()
+  loadUser()
+})
 
 // ---------------- LOGIN ----------------
-document.getElementById("loginForm").addEventListener("submit", async (e) => {
+document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
   e.preventDefault()
 
   const email = document.getElementById("loginEmail").value
@@ -159,15 +175,16 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     return
   }
 
-  loadUser()
   alert("Logged in!")
-  e.target.reset()
+  loadUser()
 })
 
 // ---------------- LOGOUT ----------------
-document.getElementById("logoutBtn").addEventListener("click", async () => {
+document.getElementById("logoutBtn")?.addEventListener("click", async () => {
   await supabase.auth.signOut()
-  status.textContent = "Welcome, Guest"
+
+  const status = document.getElementById("status")
+  if (status) status.textContent = "Welcome, Guest"
 })
 </script>
 
