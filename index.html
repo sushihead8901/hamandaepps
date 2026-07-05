@@ -223,15 +223,17 @@ document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
   }
 
   // 3. Extract the first row item from the profile list array
-  const profile = (profileArray && profileArray.length > 0) ? profileArray[0] : null;
+ const profile = (profileArray && profileArray.length > 0) ? profileArray[0] : null;
 
+  
   let username = "User";
-  let points = "50"; // Default welcome balance fallback if row wasn't generated yet
+  let points = "50"; 
 
   if (profile) {
     username = profile.username || "User";
     points = profile.points !== undefined ? profile.points : "0";
   }
+
 
   // 4. Smooth handoff transfer parameters straight to adminpage URL query string
   window.location.href = `/adminpage.html?username=${encodeURIComponent(username)}&email=${encodeURIComponent(user.email)}&points=${points}`;
