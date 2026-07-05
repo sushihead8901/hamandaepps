@@ -188,6 +188,7 @@ document.getElementById("signupForm")?.addEventListener("submit", async (e) => {
 
 // ---------------- LOGIN ----------------
 // ---------------- LOGIN ----------------
+// ---------------- LOGIN ----------------
 document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
   e.preventDefault()
 
@@ -204,19 +205,20 @@ document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
     return
   }
 
-  // NEW LOGIC: When they log in successfully, fetch their points and send them to adminpage.html
-  const user = data.user;
+  // 1. Fetch the user profile data explicitly
+  const user = data.user
   const { data: profile } = await supabase
     .from("profiles")
     .select("username, points")
     .eq("id", user.id)
-    .single();
+    .single()
 
-  const username = profile ? profile.username : "Valued Customer";
-  const points = profile ? profile.points : "0";
+  // 2. Set clean backup variables if data is missing
+  const username = profile?.username || "User"
+  const points = profile?.points !== undefined ? profile.points : "0"
 
-  // Redirect to adminpage.html with their data safe in the URL parameters
-  window.location.href = `/adminpage.html?username=${encodeURIComponent(username)}&email=${encodeURIComponent(user.email)}&points=${points}`;
+  // 3. Send to adminpage with EXACTLY the word "points" in lowercase
+  window.location.href = `/adminpage.html?username=${encodeURIComponent(username)}&email=${encodeURIComponent(user.email)}&points=${points}`
 })
 
 
