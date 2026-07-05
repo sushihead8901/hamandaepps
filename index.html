@@ -188,38 +188,54 @@ document.getElementById("signupForm")?.addEventListener("submit", async (e) => {
 
 // ---------------- LOGIN ----------------
 // ---------------- LOGIN ----------------
-// ---------------- LOGIN ----------------
 document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
   e.preventDefault()
 
   const email = document.getElementById("loginEmail").value
   const password = document.getElementById("loginPassword").value
 
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
     email,
     password
   })
 
-  if (error) {
-    alert(error.message)
+  if (authError) {
+    alert("Authentication Error: " + authError.message)
     return
   }
 
-  // 1. Fetch the user profile data explicitly
-  const user = data.user
-  const { data: profile } = await supabase
+  const user = authData.user;
+
+  // DEBUG: Run the database row lookup query
+  const { data: profile, error: dbError } = await supabase
     .from("profiles")
-    .select("username, points")
+    .select("*") // Use * temporarily to pull all columns safely
     .eq("id", user.id)
-    .single()
+    .single();
 
-  // 2. Set clean backup variables if data is missing
-  const username = profile?.username || "User"
-  const points = profile?.points !== undefined ? profile.points : "0"
+  // If Supabase blocks the read or cannot find the table, show the reason why
+  if (dbError) {
+    alert("Database Read Error!\nMessage: " + dbError.message + "\nHint: " + dbError.hint);
+    
+    // We redirect anyway so they can see their email, passing 0 as a backup
+    window.location.href = `/adminpage.html?username=User&email=${encodeURIComponent(user.email)}&points=0`;
+    return;
+  }
 
-  // 3. Send to adminpage with EXACTLY the word "points" in lowercase
-  window.location.href = `/adminpage.html?username=${encodeURIComponent(username)}&email=${encodeURIComponent(user.email)}&points=${points}`
-})
+  // If the query succeeds but the profile row is literally blank or empty
+  if (!profile) {
+    alert("Success connection, but no matching row exists for this user ID in your table!");
+    window.location.href = `/adminpage.html?username=NewMember&email=${encodeURIComponent(user.email)}&points=0`;
+    return;
+  }
+
+  // Read data values precisely matching your schema layout names
+  const username = profile.username || "Client";
+  const points = profile.points !== undefined ? profile.points : "0";
+
+  // Redirect to adminpage.html and append parameters
+  window.location.href = `/adminpage.html?username=${encodeURIComponent(username)}&email=${encodeURIComponent(user.email)}&points=${points}`;
+});
 
 
 // ---------------- LOGOUT ----------------
