@@ -1,125 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Admin Panel</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-
-<body>
-
-<h1>Admin Panel 👑</h1>
-
-<h3 id="status">Checking admin access...</h3>
-
-<table border="1">
-  <thead>
-    <tr>
-      <th>Username</th>
-      <th>Email</th>
-      <th>Points</th>
-      <th>Update</th>
-    </tr>
-  </thead>
-
-  <tbody id="usersTable"></tbody>
-</table>
-
-<script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-
-const supabase = createClient(
-  'https://elffgisoupzisecavmvp.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsZmZnaXNvdXB6aXNlY2F2bXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Nzk2MjgsImV4cCI6MjA5NjQ1NTYyOH0.BJpE196GqOOgkBsOsvCVHx4bk64P8UjzS5oD4D0gV0k'
-)
-
-const status = document.getElementById("status")
-const table = document.getElementById("usersTable")
-
-// ---------------- CHECK ADMIN ----------------
-async function checkAdmin() {
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    status.textContent = "Not logged in"
-    return null
-  }
-
-  const { data: profile, error } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single()
-
-  if (error) {
-    status.textContent = "Error loading profile"
-    return null
-  }
-
-  if (!profile?.is_admin) {
-    status.textContent = "Access denied ❌"
-    return null
-  }
-
-  status.textContent = "Welcome Admin 👑"
-  return profile
-}
-
-// ---------------- LOAD USERS ----------------
-async function loadUsers() {
-  const { data: users, error } = await supabase
-    .from("profiles")
-    .select("*")
-
-  if (error) {
-    alert(error.message)
-    return
-  }
-
-  table.innerHTML = ""
-
-  users.forEach(user => {
-    table.innerHTML += `
-      <tr>
-        <td>${user.username || "NULL"}</td>
-        <td>${user.email}</td>
-        <td>
-          <input id="points-${user.id}" type="number" value="${user.points}" min="0">
-        </td>
-        <td>
-          <button onclick="updatePoints('${user.id}')">Save</button>
-        </td>
-      </tr>
-    `
-  })
-}
-
-// ---------------- UPDATE POINTS ----------------
-window.updatePoints = async function(userId) {
-  const value = document.getElementById(`points-${userId}`).value
-
-  const { error } = await supabase
-    .from("profiles")
-    .update({ points: parseInt(value) })
-    .eq("id", userId)
-
-  if (error) {
-    alert(error.message)
-    return
-  }
-
-  alert("Points updated ✅")
-}
-
-// ---------------- INIT ----------------
-(async () => {
-  const admin = await checkAdmin()
-  if (admin) {
-    loadUsers()
-  }
-})()
-
-</script>
-
-</body>
+<html>
+  <head>
+    <title>Hamanda EPPS | Account Info</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <header>
+      <h1>Hamanda EPPS</h1>
+    <h2>Check your account:</h2>
+    </header>
+<section class="login">
+  <form>
+    
+  </form>
+</section>
+  </body>
 </html>
