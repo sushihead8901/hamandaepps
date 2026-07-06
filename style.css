@@ -12,7 +12,7 @@ h1 {
 }
 /*The code will control the font color*/
 p {
-  color: #d6cd23;
+  color: #3ff27b;
 }
 /*The code will control the button color and border */
 button {
@@ -50,4 +50,7 @@ font-size: 1.1em
   flex-wrap: wrap; 
   gap: 25px;
   margin: 20px 0; 
+}
+.paper, .folder {
+  border: 4px solid;
 }
