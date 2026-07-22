@@ -50,7 +50,6 @@ font-size: 1.1em
   gap: 25px;
   margin: 20px 0; 
 }
-.paper, .folder {
+div {
   border: 4px solid;
-  text-align: center;
 }
