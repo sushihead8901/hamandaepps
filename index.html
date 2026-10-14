@@ -17,22 +17,229 @@
 
 <header>
   <h1>Hamanda Enterprise Printer Service</h1>
-  <h3>Website Suspened</h3>
+  <h3>Fast Printing, Cheap Prints</h3>
+  <nav style="text-align: center;">
+    <a href="contact.html">Contact</a>
+    <a href="shop.html">Browse Shop</a>
+    <a href="direction.html">Submit Print</a>
+  </nav>
+  <!-- ADD THIS LINE RIGHT HERE FOR YOUR SUPABASE WELCOME TEXT -->
+  <p id="status" style="font-weight: bold; margin-top: 10px; color: #000000; border: 3px solid; text-align: center;">Welcome, Guest</p>
 </header>
+
+
+<hr>
+
 <div id="boxP1">
-  <h3>Website Suspension</h3>
+  <h3>About Us:</h3>
   <p>
-Hamanda EPPS website will be shut down on October 30th.
+    We print documents just for <strong>YOU</strong>!
+    Our prints are <u>reliable</u>, <b>fast</b>, and cheap! 
+  </p>
+  <p>
+    We print documents to help you. You might need a 8-page essay printed instantly for work. Those documents may be <b>important</b>.
+    That's why we're here! To help you finish your work!
   </p>
 </div>
 
 <div id="boxP2">
-  <h3>Shop</h3>
+  <h3>Our Services:</h3>
   <p>
-   The Hamanda EPPS will no longer be available after October 30th. As it will be replaced by another service. All accounts will be closed. No information will be passed to another service.
-    Thank you.
+    Our business offers a <b>printer</b> to print your documents, <b>folders</b> to store your documents, and <b>staplers</b> to staple your documents!
+    You can also make a account for rewards and coupons to save money. Whatever you need, we're here to print for <strong>YOU</strong>!
   </p>
 </div>
+  <button onclick="window.location.href='/contact.html'" title="Click Me to contact me!">Contact</button>
+  <button onclick="window.location.href='/shop.html'" title="Click Me to broswe the shop!">Broswe Shop</button>
+  <button onclick="window.location.href='/direction.html'" title="Click Me to Submit a Print Job!">Submit Print</button>
+<!--sign up & log in, huh, this is useless comment :/-->
+<!-- SYSTEM AUTHENTICATION PORTAL -->
+<div class="auth-container" style="display: flex; flex-wrap: wrap; gap: 40px; margin: 20px 0;">
+
+  <!-- SIGN UP BLOCK -->
+  <div style="flex: 1; min-width: 280px;">
+    <h2>Sign Up</h2>
+    <form id="signupForm">
+      <input id="signupUsername" placeholder="Username" required minlength="3">
+      <br><br>
+      <input id="signupEmail" type="email" placeholder="Email" required>
+      <br><br>
+      <input id="signupPassword" type="password" placeholder="Password" required>
+      <br><br>
+      <button type="submit">Create Account</button>
+    </form>
+  </div>
+
+  <!-- NEW LOG IN BLOCK (Perfect alignment for your script) -->
+  <div style="flex: 1; min-width: 280px;">
+    <h2>Log In</h2>
+    <form id="loginForm">
+      <input id="loginEmail" type="email" placeholder="Email" required>
+      <br><br>
+      <input id="loginPassword" type="password" placeholder="Password" required>
+      <br><br>
+      <button type="submit">Log In</button>
+    </form>
+  </div>
+
+</div>
+
+<hr>
+
+<footer>
+  <p>Copyright Hamanda EPPS 2026</p>
+</footer>
+<!-- SUPABASE code by chatgpt -->
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+const supabaseUrl = 'https://elffgisoupzisecavmvp.supabase.co'
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVsZmZnaXNvdXB6aXNlY2F2bXZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Nzk2MjgsImV4cCI6MjA5NjQ1NTYyOH0.BJpE196GqOOgkBsOsvCVHx4bk64P8UjzS5oD4D0gV0k'
+
+const supabase = createClient(supabaseUrl, supabaseKey)
+
+// ---------------- LOAD USER ----------------
+async function loadUser() {
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const status = document.getElementById("status")
+  if (!status) return
+
+  if (!user) {
+    status.textContent = "Welcome, Guest"
+    return
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single()
+
+  status.textContent = `Welcome, ${profile?.username || "User"}`
+}
+
+loadUser()
+
+// ---------------- SIGN UP ----------------
+document.getElementById("signupForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault()
+
+  const username = document.getElementById("signupUsername").value
+  const email = document.getElementById("signupEmail").value
+  const password = document.getElementById("signupPassword").value
+
+  // 1. Create auth user
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { username }
+    }
+  })
+
+  if (error) {
+    alert("Signup error: " + error.message)
+    return
+  }
+
+  const user = data.user
+
+  if (!user) {
+    alert("Check your email to confirm signup (or disable email confirmation)")
+    return
+  }
+
+  // 2. Create profile safely (NO trigger needed)
+  const { error: profileError } = await supabase
+  .from("profiles")
+  .upsert({
+    id: user.id,
+    email: email,
+    username: username,
+    points: 50,
+  })
+
+  if (profileError) {
+    alert("Profile error: " + profileError.message)
+    return
+  }
+
+  alert("Account created successfully!")
+  e.target.reset()
+  loadUser()
+})
+
+// ---------------- LOGIN ----------------
+// ---------------- LOGIN ----------------
+// ---------------- LOGIN ----------------
+document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
+
+  // 1. Authenticate user account credentials securely via Supabase Auth
+  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (authError) {
+    alert("Login Error: " + authError.message);
+    return;
+  }
+
+  const user = authData.user;
+
+  // 2. Safe array fetch prevents JSON coercion errors if row count isn't exactly 1
+  const { data: profileArray, error: dbError } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .limit(1);
+
+  if (dbError) {
+    alert("Database Read Error: " + dbError.message);
+    // Safe redirection fallback on server network error
+    window.location.href = `/adminpage.html?username=Member&email=${encodeURIComponent(user.email)}&points=0`;
+    return;
+  }
+
+  // 3. Extract the first row item from the profile list array
+ const profile = (profileArray && profileArray.length > 0) ? profileArray[0] : null;
+
+  
+  let username = "User";
+  let points = "50"; 
+
+  if (profile) {
+    username = profile.username || "User";
+    points = profile.points !== undefined ? profile.points : "0";
+  }
+
+
+  // 4. Smooth handoff transfer parameters straight to adminpage URL query string
+  window.location.href = `/adminpage.html?username=${encodeURIComponent(username)}&email=${encodeURIComponent(user.email)}&points=${points}`;
+});
+
+// ---------------- LOGOUT ----------------
+document.getElementById("logoutBtn")?.addEventListener("click", async () => {
+  await supabase.auth.signOut()
+
+  const status = document.getElementById("status")
+  if (status) status.textContent = "Welcome, Guest"
+})
+// --------------install button---
+  if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('PWA Service Worker registered successfully!'))
+      .catch(err => console.log('Service Worker registration failed:', err));
+  });
+}
+
+</script>
+
 </body>
 </html>
-  
